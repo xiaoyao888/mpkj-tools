@@ -27,7 +27,7 @@
       <div>印花税: {{ stampTax.toFixed(3) }} 元</div>
       <div>企业所得税: {{ incomeTax.toFixed(2) }} 元</div>
       <div class="total">总税负: {{ totalTax.toFixed(2) }} 元</div>
-      <div class="rate">综合税负率: {{ taxRate.toFixed(2) }}%</div>
+      <div class="rate">综合税负率: {{ isNaN(taxRate.toFixed(2))? '0.00' : taxRate.toFixed(2) }}%</div>
     </div>
   </div>
 </template>
@@ -35,8 +35,8 @@
 <script setup>
 import {ref,computed} from "vue";
 
-const sales = ref(1000000);  // 默认销售额
-const cost = ref(600000);    // 默认进货成本
+const sales = ref(null);  // 默认销售额
+const cost = ref(null);    // 默认进货成本
 const vatRate = ref(0.03);  // 默认增值税率
 
 // 增值税计算
