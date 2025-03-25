@@ -16,7 +16,7 @@ const items = ref([
   {
     key: 'rateCalc',
     label: '小微企业税负计算器',
-    title: 'Navigation One',
+    title: '小微企业税负计算器',
   },
   {
     key: 'pwdGen',
