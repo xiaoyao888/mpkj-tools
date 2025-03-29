@@ -10,21 +10,18 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 const current = ref(['rateCalc']);
 const handleClick = (key) => {
-  router.push("/"+key.key);
+  router.push(key.key);
 }
-const items = ref([
-  {
-    key: 'rateCalc',
-    label: '小微企业税负计算器',
-    title: '小微企业税负计算器',
-  },
-  {
-    key: 'pwdGen',
-    label: '密码生成器',
-    title: '密码生成器',
-  },
-]);
+const items = ref([]);
+router.getRoutes().forEach(route => {
+    items.value.push({
+      key: route.path,
+      label: route.name,
+      title: route.name
+    });
+});
 
+// router.push('/rateCalc');
 </script>
 <style scoped>
 header {

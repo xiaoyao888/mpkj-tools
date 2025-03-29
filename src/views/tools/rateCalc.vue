@@ -1,5 +1,5 @@
 <template>
-  <div class="calculator-container">
+  <div class="container">
     <h2 class="title">小微企业税负计算器</h2>
 
     <div class="input-group">
@@ -72,21 +72,7 @@ const taxRate = computed(() => {
 </script>
 
 <style scoped>
-.calculator-container {
-  font-family: Arial, sans-serif;
-  max-width: 600px;
-  margin: 20px auto;
-  padding: 20px;
-  background-color: #f9f9f9;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
 
-.title {
-  text-align: center;
-  color: #34495e;
-}
 
 .input-group {
   display: flex;
