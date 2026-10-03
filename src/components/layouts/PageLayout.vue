@@ -1,5 +1,5 @@
 <template>
-  <a-menu style="position: absolute; top: 0; left: 0; width: 100%; z-index: 1000; background-color: #fff; border-radius: 4px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);" v-model:selectedKeys="current" mode="horizontal" :items="items" @click="handleClick"/>
+  <a-menu style="width: 100%; z-index: 1000; background-color: #fff; border-radius: 4px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);" v-model:selectedKeys="current" mode="horizontal" :items="items" @click="handleClick"/>
   <router-view></router-view>
 </template> 
 <script setup>

@@ -780,10 +780,10 @@ html, body, #app {
 
 .chessboard-container {
   position: relative;
-  max-width: 90vw;
-  max-height: 90vh;
-  width: calc(min(90vw, 90vh));
-  height: calc(min(90vw, 90vh));
+  max-width: 60vw;
+  max-height: 60vh;
+  width: calc(min(60vw, 60vh));
+  height: calc(min(60vw, 60vh));
   border:3px solid #572b0c;
   border-radius:5px;
 }
