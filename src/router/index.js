@@ -100,6 +100,16 @@ const routes = [
         meta:{title:'图片合并PDF'},
         component: () => import('@/views/tools/imageToPdf.vue')
       }]
+    },
+    {
+      path: '/wordToPdf',
+      name: 'Word导出PDF',
+      component: PageLayout,
+      children:[{
+        path: '/wordToPdf',
+        meta:{title:'Word导出PDF'},
+        component: () => import('@/views/tools/wordToPdf.vue')
+      }]
     }
 ]
 
