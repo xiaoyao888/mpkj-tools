@@ -16,8 +16,19 @@ if not exist "package.json" (
     exit /b 1
 )
 
-REM 0. 执行构建
-echo [0/5] 执行 npm run build ...
+REM 0. 拉取最新代码
+echo [0/6] 拉取最新代码 (git pull) ...
+git pull origin
+if errorlevel 1 (
+    echo [错误] git pull 失败，请检查网络或解决冲突后重试
+    pause
+    exit /b 1
+)
+echo 拉取完成
+echo.
+
+REM 1. 执行构建
+echo [1/6] 执行 npm run build ...
 call npm run build
 if errorlevel 1 (
     echo [错误] 构建失败，请检查代码后重试
@@ -40,7 +51,7 @@ if not exist "dist" (
 )
 
 REM 1. 删除 docs 下除 CNAME 外的所有内容
-echo [1/5] 清理 docs 目录（保留 CNAME）...
+echo [2/6] 清理 docs 目录（保留 CNAME）...
 if exist "docs\CNAME" (
     move /y "docs\CNAME" "%temp%\CNAME_deploy.tmp" >nul
 )
@@ -53,13 +64,13 @@ echo 已清理 docs 目录，CNAME 已保留
 echo.
 
 REM 2. 复制 dist 下所有文件到 docs
-echo [2/5] 复制 dist 到 docs ...
+echo [3/6] 复制 dist 到 docs ...
 xcopy "dist\*" "docs\" /e /i /y /q
 echo 复制完成
 echo.
 
 REM 3. Git 提交
-echo [3/5] 提交到 Git ...
+echo [4/6] 提交到 Git ...
 git add -A
 if errorlevel 1 (
     echo [错误] git add 失败
@@ -81,7 +92,7 @@ if errorlevel 1 (
 echo.
 
 REM 4. 推送到远程
-echo [4/5] 推送到 GitHub ...
+echo [5/6] 推送到 GitHub ...
 git push origin
 if errorlevel 1 (
     echo [错误] git push 失败，请检查网络或权限
