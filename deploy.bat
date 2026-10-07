@@ -9,20 +9,38 @@ echo  部署脚本：同步 dist -^> docs 并推送到 GitHub
 echo ============================================
 echo.
 
-REM 检查 docs 和 dist 目录
+REM 检查 package.json 是否存在
+if not exist "package.json" (
+    echo [错误] 未找到 package.json
+    pause
+    exit /b 1
+)
+
+REM 0. 执行构建
+echo [0/5] 执行 npm run build ...
+call npm run build
+if errorlevel 1 (
+    echo [错误] 构建失败，请检查代码后重试
+    pause
+    exit /b 1
+)
+echo 构建完成
+echo.
+
+REM 检查 docs 目录
 if not exist "docs" (
     echo [错误] 未找到 docs 目录
     pause
     exit /b 1
 )
 if not exist "dist" (
-    echo [错误] 未找到 dist 目录，请先执行 npm run build
+    echo [错误] 构建成功但未生成 dist 目录
     pause
     exit /b 1
 )
 
 REM 1. 删除 docs 下除 CNAME 外的所有内容
-echo [1/4] 清理 docs 目录（保留 CNAME）...
+echo [1/5] 清理 docs 目录（保留 CNAME）...
 if exist "docs\CNAME" (
     move /y "docs\CNAME" "%temp%\CNAME_deploy.tmp" >nul
 )
@@ -35,13 +53,13 @@ echo 已清理 docs 目录，CNAME 已保留
 echo.
 
 REM 2. 复制 dist 下所有文件到 docs
-echo [2/4] 复制 dist 到 docs ...
+echo [2/5] 复制 dist 到 docs ...
 xcopy "dist\*" "docs\" /e /i /y /q
 echo 复制完成
 echo.
 
 REM 3. Git 提交
-echo [3/4] 提交到 Git ...
+echo [3/5] 提交到 Git ...
 git add -A
 if errorlevel 1 (
     echo [错误] git add 失败
@@ -63,7 +81,7 @@ if errorlevel 1 (
 echo.
 
 REM 4. 推送到远程
-echo [4/4] 推送到 GitHub ...
+echo [4/5] 推送到 GitHub ...
 git push origin
 if errorlevel 1 (
     echo [错误] git push 失败，请检查网络或权限
