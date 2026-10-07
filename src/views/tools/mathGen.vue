@@ -248,7 +248,7 @@ const rangeOptions = [
   { value: 100, label: '100以内' },
 ]
 
-const countOptions = [10, 20, 30, 50, 100]
+const countOptions = [10, 20, 30, 50, 100, 500, 1000, 2000, 5000]
 
 const form = reactive({
   type: 'add',

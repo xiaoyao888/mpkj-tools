@@ -444,7 +444,7 @@ const typeOptions = [
   { value: 'poem', label: '古诗填空', icon: '诗' },
   { value: 'similar', label: '形近字', icon: '辨' },
 ]
-const countOptions = [10, 20, 30, 50]
+const countOptions = [10, 20, 30, 50, 100, 500, 1000, 2000, 5000]
 
 const form = reactive({
   type: 'pinyin',
