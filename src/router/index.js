@@ -87,7 +87,7 @@ const routes = [
       component: PageLayout,
       children:[{
         path: '/fileToBase64',
-        meta:{title:'文件转Base64'}, 
+        meta:{title:'文件转Base64'},
         component: () => import('@/views/tools/fileToBase64.vue')
       }]
     },
@@ -110,6 +110,26 @@ const routes = [
             meta:{title:'一年级语文练习'},
             component: () => import(/* webpackChunkName: "user" */ '@/views/tools/chineseGen.vue')
         }]
+    },
+    {
+      path: '/imageToPdf',
+      name: '图片合并PDF',
+      component: PageLayout,
+      children:[{
+        path: '/imageToPdf',
+        meta:{title:'图片合并PDF'},
+        component: () => import('@/views/tools/imageToPdf.vue')
+      }]
+    },
+    {
+      path: '/wordToPdf',
+      name: 'Word导出PDF',
+      component: PageLayout,
+      children:[{
+        path: '/wordToPdf',
+        meta:{title:'Word导出PDF'},
+        component: () => import('@/views/tools/wordToPdf.vue')
+      }]
     }
 ]
 
