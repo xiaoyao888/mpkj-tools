@@ -6,6 +6,7 @@ import rmbConverter from '../views/tools/RMBConverter.vue'
 import daxiaoxie from "@/views/tools/daxiaoxie.vue"
 import gobang from "@/views/games/gobang.vue";
 import chineseToPinyin from "@/views/tools/chineseToPinyin.vue";
+import Home from "@/views/Home.vue";
 import BlankLayout from "@/components/layouts/BlankLayout.vue";
 import PageLayout from "@/components/layouts/PageLayout.vue";
 
@@ -14,10 +15,11 @@ const routes = [
         path: '/',
         name: '首页',
         component: PageLayout,
-        children:[{
-            path: '/rateCalc',
-            meta:{title:'小微企业税负计算器'},
-            component: () => import(/* webpackChunkName: "user" */ '@/views/tools/rateCalc.vue')
+        children: [{
+            path: '',
+            name: '工具列表',
+            meta: { title: '工具列表' },
+            component: Home
         }]
     },
     {
@@ -129,6 +131,16 @@ const routes = [
         path: '/wordToPdf',
         meta:{title:'Word导出PDF'},
         component: () => import('@/views/tools/wordToPdf.vue')
+      }]
+    },
+    {
+      path: '/watermark',
+      name: '图片加水印',
+      component: PageLayout,
+      children:[{
+        path: '/watermark',
+        meta:{title:'图片加水印'},
+        component: () => import('@/views/tools/watermark.vue')
       }]
     }
 ]
