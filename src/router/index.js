@@ -142,6 +142,16 @@ const routes = [
         meta:{title:'图片加水印'},
         component: () => import('@/views/tools/watermark.vue')
       }]
+    },
+    {
+      path: '/symbols',
+      name: '特殊符号大全',
+      component: PageLayout,
+      children:[{
+        path: '/symbols',
+        meta:{title:'特殊符号大全'},
+        component: () => import('@/views/tools/symbols.vue')
+      }]
     }
 ]
 

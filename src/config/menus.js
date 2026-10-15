@@ -13,7 +13,8 @@ import {
   BlockOutlined,
   FileTextOutlined,
   HighlightOutlined,
-  SmileOutlined
+  SmileOutlined,
+  TagsOutlined
 } from '@ant-design/icons-vue';
 
 /**
@@ -37,7 +38,8 @@ export const MENU_GROUPS = [
     icon: FontSizeOutlined,
     children: [
       { path: '/daxiaoxie', name: '字母大小写转化', desc: '英文大小写与命名格式转换' },
-      { path: '/chineseToPinyin', name: '汉字批量转拼音', desc: '汉字批量转换为拼音' }
+      { path: '/chineseToPinyin', name: '汉字批量转拼音', desc: '汉字批量转换为拼音' },
+      { path: '/symbols', name: '特殊符号大全', desc: '数学图形箭头等符号点击复制' }
     ]
   },
   {
@@ -81,6 +83,7 @@ export const TOOL_ICONS = {
   '/rmbConverter': DollarOutlined,
   '/daxiaoxie': FontSizeOutlined,
   '/chineseToPinyin': EditOutlined,
+  '/symbols': TagsOutlined,
   '/gobang': BlockOutlined,
   '/fileToBase64': FileTextOutlined,
   '/mathGen': PlusCircleOutlined,
