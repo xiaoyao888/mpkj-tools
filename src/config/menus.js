@@ -1,6 +1,7 @@
 import {
   BookOutlined,
   CalculatorOutlined,
+  CodeOutlined,
   DollarOutlined,
   EditOutlined,
   FileImageOutlined,
@@ -14,7 +15,9 @@ import {
   FileTextOutlined,
   HighlightOutlined,
   SmileOutlined,
-  TagsOutlined
+  TagsOutlined,
+  FieldTimeOutlined,
+  NumberOutlined
 } from '@ant-design/icons-vue';
 
 /**
@@ -39,7 +42,8 @@ export const MENU_GROUPS = [
     children: [
       { path: '/daxiaoxie', name: '字母大小写转化', desc: '英文大小写与命名格式转换' },
       { path: '/chineseToPinyin', name: '汉字批量转拼音', desc: '汉字批量转换为拼音' },
-      { path: '/symbols', name: '特殊符号大全', desc: '数学图形箭头等符号点击复制' }
+      { path: '/symbols', name: '特殊符号大全', desc: '数学图形箭头等符号点击复制' },
+      { path: '/wordCount', name: '字数统计工具', desc: '统计汉字、字母、数字与符号数量' }
     ]
   },
   {
@@ -58,6 +62,15 @@ export const MENU_GROUPS = [
     title: '安全加密',
     icon: KeyOutlined,
     children: [{ path: '/pwdGen', name: '密码生成器', desc: '随机生成高强度密码' }]
+  },
+  {
+    key: 'devtools',
+    title: '开发工具',
+    icon: CodeOutlined,
+    children: [
+      { path: '/jsonFormat', name: 'JSON格式化校验', desc: 'JSON 格式化、压缩、转义与校验' },
+      { path: '/cronGen', name: 'Cron表达式生成器', desc: 'Quartz Cron 表达式可视化生成与解析' }
+    ]
   },
   {
     key: 'education',
@@ -84,6 +97,9 @@ export const TOOL_ICONS = {
   '/daxiaoxie': FontSizeOutlined,
   '/chineseToPinyin': EditOutlined,
   '/symbols': TagsOutlined,
+  '/wordCount': NumberOutlined,
+  '/jsonFormat': CodeOutlined,
+  '/cronGen': FieldTimeOutlined,
   '/gobang': BlockOutlined,
   '/fileToBase64': FileTextOutlined,
   '/mathGen': PlusCircleOutlined,

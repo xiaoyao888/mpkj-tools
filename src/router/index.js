@@ -152,6 +152,36 @@ const routes = [
         meta:{title:'特殊符号大全'},
         component: () => import('@/views/tools/symbols.vue')
       }]
+    },
+    {
+      path: '/jsonFormat',
+      name: 'JSON格式化校验',
+      component: PageLayout,
+      children:[{
+        path: '/jsonFormat',
+        meta:{title:'JSON格式化校验'},
+        component: () => import('@/views/tools/jsonFormat.vue')
+      }]
+    },
+    {
+      path: '/cronGen',
+      name: 'Cron表达式生成器',
+      component: PageLayout,
+      children:[{
+        path: '/cronGen',
+        meta:{title:'Cron表达式生成器'},
+        component: () => import('@/views/tools/cronGen.vue')
+      }]
+    },
+    {
+      path: '/wordCount',
+      name: '字数统计工具',
+      component: PageLayout,
+      children:[{
+        path: '/wordCount',
+        meta:{title:'字数统计工具'},
+        component: () => import('@/views/tools/wordCount.vue')
+      }]
     }
 ]
 
