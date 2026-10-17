@@ -154,7 +154,7 @@
             <input
               v-model.number="dotShape"
               type="range"
-              min="0"
+              min="-50"
               max="50"
               step="1"
               class="dot-slider"
@@ -162,9 +162,9 @@
             />
           </div>
           <div class="diy_statue">
-            <a href="javascript:" :class="{ on: liquidMode }" @click="setLiquid">液态</a>
-            <a href="javascript:" :class="{ on: !liquidMode && dotShape === 0 }" @click="setDotShape(0)">直角</a>
-            <a href="javascript:" :class="{ on: !liquidMode && dotShape === 25 }" @click="setDotShape(25)">圆角</a>
+            <a href="javascript:" :class="{ on: dotShape < 0 }" @click="setDotShape(-50)">液态</a>
+            <a href="javascript:" :class="{ on: dotShape === 0 }" @click="setDotShape(0)">直角</a>
+            <a href="javascript:" :class="{ on: dotShape > 0 }" @click="setDotShape(25)">圆角</a>
           </div>
         </div>
 
@@ -486,23 +486,13 @@ const selectPattern = (key) => {
   drawQRCode();
 };
 
-// 点形状：圆角半径占单元格的百分比，0=直角，25=圆角；液态为独立模式（邻域融合）
+// 点形状滑条：-50~50，默认 0=直角；向右渐变为圆角；向左渐变为液态（邻域融合）
 const dotShape = ref(0);
-const liquidMode = ref(false);
 const setDotShape = (v) => {
-  liquidMode.value = false;
   dotShape.value = v;
   drawQRCode();
 };
-const setLiquid = () => {
-  liquidMode.value = true;
-  dotShape.value = 50;
-  drawQRCode();
-};
-const onSliderInput = () => {
-  liquidMode.value = false;
-  drawQRCode();
-};
+const onSliderInput = () => drawQRCode();
 
 // 计算属性
 const textLength = computed(() => textContent.value.length);
@@ -631,7 +621,7 @@ const drawQRCode = async () => {
     ctx.fillRect(0, 0, size, size);
 
     // 绘制二维码模块
-    if (liquidMode.value) {
+    if (dotShape.value < 0) {
       // 液态：相邻点融合连通，孤立点为圆点；定位点由图案样式绘制
       drawLiquidModules(ctx, qr, offset, cellSize, moduleCount);
     } else {
@@ -669,7 +659,7 @@ const drawQRCode = async () => {
     }
 
     // 绘制三个角的定位点（液态模式下默认样式保持圆角外观）
-    const styleKey = liquidMode.value && patternStyle.value === 'default' ? 'rounded' : patternStyle.value;
+    const styleKey = dotShape.value < 0 && patternStyle.value === 'default' ? 'rounded' : patternStyle.value;
     drawFinderPattern(ctx, offset, cellSize, 0, 0, styleKey);
     drawFinderPattern(ctx, offset, cellSize, 0, moduleCount - 7, styleKey);
     drawFinderPattern(ctx, offset, cellSize, moduleCount - 7, 0, styleKey);
@@ -714,8 +704,11 @@ const roundRectPath = (ctx, x, y, w, h, r) => {
 
 // 液态模式：数据点邻域融合绘制
 // 每个黑点画中心圆，若某方向邻居也是黑点（且非定位点），则向该方向填矩形连通
+// 滑条值 dotShape(-50~-1) 控制液态强度：-50=满格完全融合，越接近 0 点与连通条越细
 const drawLiquidModules = (ctx, qr, offset, cellSize, count) => {
-  const r = cellSize / 2;
+  const intensity = -dotShape.value;
+  // 最小保留 8% 半径，避免接近 0 时图案不可见
+  const r = Math.max(cellSize * 0.08, (cellSize / 2) * (intensity / 50));
   const dark = (row, col) => {
     if (row < 0 || col < 0 || row >= count || col >= count) return false;
     if (isFinderPattern(row, col, count)) return false; // 不与定位点连通
@@ -732,19 +725,19 @@ const drawLiquidModules = (ctx, qr, offset, cellSize, count) => {
 
       const x = offset + col * cellSize;
       const y = offset + row * cellSize;
-      const cx = x + r;
-      const cy = y + r;
+      const cx = x + cellSize / 2;
+      const cy = y + cellSize / 2;
 
-      // 中心圆
+      // 中心圆（半径随滑块缩放，保持居中）
       ctx.beginPath();
       ctx.arc(cx, cy, r, 0, Math.PI * 2);
       ctx.fill();
 
-      // 向黑邻居方向连通
-      if (dark(row - 1, col)) ctx.fillRect(x, y, cellSize, r);
-      if (dark(row + 1, col)) ctx.fillRect(x, cy, cellSize, r);
-      if (dark(row, col - 1)) ctx.fillRect(x, y, r, cellSize);
-      if (dark(row, col + 1)) ctx.fillRect(cx, y, r, cellSize);
+      // 向黑邻居方向连通（宽度随点半径缩放，居中）
+      if (dark(row - 1, col)) ctx.fillRect(cx - r, y, r * 2, cy - y);
+      if (dark(row + 1, col)) ctx.fillRect(cx - r, cy, r * 2, y + cellSize - cy);
+      if (dark(row, col - 1)) ctx.fillRect(x, cy - r, cx - x, r * 2);
+      if (dark(row, col + 1)) ctx.fillRect(cx, cy - r, x + cellSize - cx, r * 2);
     }
   }
 };
@@ -992,7 +985,6 @@ const resetAll = () => {
   textEmbed.value = { content: '', effect: 'default', fontsize: 28, color: '#000000' };
   other.value = { margin: 10, level: 'M', rotate: 0, size: 300 };
   dotShape.value = 0;
-  liquidMode.value = false;
   patternStyle.value = 'default';
 
   if (logoInput.value) logoInput.value.value = '';
