@@ -77,8 +77,12 @@
         <!-- 网址 -->
         <div v-show="activeTab === 'url'" class="sub">
           <div class="tit"><span>即时输入即时生成!</span>输入URL网址</div>
-          <input v-model="urlContent" type="text" maxlength="255" placeholder="http://" @input="onUrlInput" />
-          <div class="size">输入网址</div>
+          <form class="form-inline">
+            <div class="form-group">
+              <label>网址</label>
+              <input v-model="urlContent" type="text" maxlength="255" placeholder="http://" @input="onUrlInput" />
+            </div>
+          </form>
         </div>
 
         <!-- 短信 -->
