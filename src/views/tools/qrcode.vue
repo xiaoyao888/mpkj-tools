@@ -1077,7 +1077,7 @@ onMounted(() => {
 
 .qrcode-right {
   flex-shrink: 0;
-  width: 330px;
+  width: 440px;
 }
 
 .qrcode-forms {
@@ -1273,25 +1273,41 @@ onMounted(() => {
   padding: 12px 14px;
   border-radius: 6px;
   margin-bottom: 8px;
+  display: flex;
+  gap: 12px;
 }
 
 .tabset {
   display: flex;
+  flex-direction: column;
   gap: 4px;
-  flex-wrap: wrap;
-  margin-bottom: 10px;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 8px;
+  flex-shrink: 0;
+  width: 78px;
+  border-right: 1px solid #eee;
+  padding-right: 10px;
 }
 
 .tabset .tabelem {
-  padding: 4px 8px;
+  padding: 6px 8px;
   font-size: 12px;
   white-space: nowrap;
   flex-shrink: 0;
+  text-align: center;
+  border-radius: 4px;
+}
+
+.tabset .tabelem:hover {
+  background-color: #f0f0f0;
+}
+
+.tabset .tabelem.active {
+  background-color: #1677ff;
+  color: #fff;
 }
 
 .fnsubv {
+  flex: 1;
+  min-width: 0;
   min-height: 0;
 }
 
