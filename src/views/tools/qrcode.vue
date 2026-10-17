@@ -461,18 +461,30 @@ const other = ref({
   size: 300
 });
 
-// 定位点图案样式：ring=外框形状，dot=内点形状
+// 定位点图案样式：ring=外框形状，dot=内点形状（与参考图 22 款一致）
 const patternStyles = [
   { key: 'default', name: '标准', ring: 'square', dot: 'square' },
-  { key: 'squareRounded', name: '方框圆角点', ring: 'square', dot: 'rounded' },
+  { key: 'cut', name: '切角', ring: 'cut', dot: 'cut' },
   { key: 'squareCircle', name: '方框圆点', ring: 'square', dot: 'circle' },
   { key: 'rounded', name: '圆角', ring: 'rounded', dot: 'rounded' },
   { key: 'roundedCircle', name: '圆角圆点', ring: 'rounded', dot: 'circle' },
+  { key: 'squareQuarter', name: '方框角点', ring: 'square', dot: 'quarter' },
+  { key: 'skew', name: '斜切', ring: 'skew', dot: 'skew' },
+  { key: 'circleLeaf', name: '圆环叶片', ring: 'circle', dot: 'leaf' },
+  { key: 'blob', name: '饱满圆角', ring: 'blob', dot: 'blob' },
+  { key: 'roundedSquare', name: '圆角方点', ring: 'rounded', dot: 'square' },
+  { key: 'concave', name: '凹边星形', ring: 'concave', dot: 'star4' },
+  { key: 'wavy', name: '波浪星形', ring: 'wavy', dot: 'star4' },
+  { key: 'leaf', name: '叶片', ring: 'leaf', dot: 'leaf' },
+  { key: 'dottedSq', name: '方点阵', ring: 'dottedSq', dot: 'dottedSq' },
+  { key: 'dotted', name: '圆点阵', ring: 'dotted', dot: 'dotted' },
+  { key: 'zigzag', name: '锯齿', ring: 'zigzag', dot: 'tilt' },
+  { key: 'squareTilt', name: '方框斜点', ring: 'square', dot: 'tilt' },
+  { key: 'blobSquare', name: '饱满方点', ring: 'blob', dot: 'square' },
   { key: 'circle', name: '圆形', ring: 'circle', dot: 'circle' },
   { key: 'circleSquare', name: '圆环方点', ring: 'circle', dot: 'square' },
-  { key: 'leaf', name: '叶片', ring: 'leaf', dot: 'leaf' },
-  { key: 'oneCorner', name: '单圆角', ring: 'oneCorner', dot: 'oneCorner' },
-  { key: 'dotted', name: '点阵', ring: 'dotted', dot: 'dotted' }
+  { key: 'squareBlob', name: '方框圆角点', ring: 'square', dot: 'blob' },
+  { key: 'star', name: '星形', ring: 'star4', dot: 'star4' }
 ];
 const patternStyle = ref('default');
 const patternCanvases = {};
@@ -742,37 +754,97 @@ const drawLiquidModules = (ctx, qr, offset, cellSize, count) => {
   }
 };
 
-// 定位点形状路径：square 方形 / rounded 圆角 / circle 圆形 / leaf 叶片(对角圆角) / oneCorner 单圆角
+// 定位点形状路径：square 方形 / rounded 圆角 / blob 饱满圆角 / circle 圆形
+// leaf 叶片(对角圆角) / cut 切角 / quarter 角点(单角全圆) / skew 斜切(旋转-10°) / tilt 倾斜(旋转15°)
+// concave 凹边 / wavy 波浪 / star4 四角星 / zigzag 锯齿
 const finderShapePath = (ctx, x, y, s, type) => {
   ctx.beginPath();
+  const cx = x + s / 2;
+  const cy = y + s / 2;
   if (type === 'circle') {
-    ctx.arc(x + s / 2, y + s / 2, s / 2, 0, Math.PI * 2);
+    ctx.arc(cx, cy, s / 2, 0, Math.PI * 2);
     return;
   }
-  if (type === 'rounded') {
-    roundRectPath(ctx, x, y, s, s, s * 0.22);
+  if (type === 'rounded' || type === 'blob') {
+    roundRectPath(ctx, x, y, s, s, s * (type === 'blob' ? 0.38 : 0.22));
     return;
   }
-  if (type === 'leaf') {
+  if (type === 'leaf' || type === 'cut') {
     const R = s * 0.5;
     ctx.moveTo(x, y);
     ctx.lineTo(x + s - R, y);
-    ctx.arcTo(x + s, y, x + s, y + R, R);
+    if (type === 'leaf') ctx.arcTo(x + s, y, x + s, y + R, R);
+    else ctx.lineTo(x + s, y + R);
     ctx.lineTo(x + s, y + s);
     ctx.lineTo(x + R, y + s);
-    ctx.arcTo(x, y + s, x, y + s - R, R);
+    if (type === 'leaf') ctx.arcTo(x, y + s, x, y + s - R, R);
+    else ctx.lineTo(x, y + s - R);
     ctx.lineTo(x, y);
     ctx.closePath();
     return;
   }
-  if (type === 'oneCorner') {
-    const R = s * 0.5;
-    ctx.moveTo(x, y);
-    ctx.lineTo(x + s - R, y);
-    ctx.arcTo(x + s, y, x + s, y + R, R);
-    ctx.lineTo(x + s, y + s);
-    ctx.lineTo(x, y + s);
+  if (type === 'quarter') {
+    // 单角全圆（角点）
+    ctx.moveTo(x, y + s);
     ctx.lineTo(x, y);
+    ctx.arcTo(x + s, y, x + s, y + s, s);
+    ctx.lineTo(x, y + s);
+    ctx.closePath();
+    return;
+  }
+  if (type === 'skew' || type === 'tilt') {
+    // 旋转的方块
+    const angle = type === 'skew' ? -0.18 : 0.26;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(angle);
+    ctx.rect(-s / 2, -s / 2, s, s);
+    ctx.restore();
+    return;
+  }
+  if (type === 'concave' || type === 'wavy') {
+    // 凹边：四边向内弯；波浪：四边向外鼓
+    const d = s * (type === 'concave' ? 0.18 : -0.15);
+    ctx.moveTo(x, y);
+    ctx.quadraticCurveTo(cx, y + d, x + s, y);
+    ctx.quadraticCurveTo(x + s - d, cy, x + s, y + s);
+    ctx.quadraticCurveTo(cx, y + s - d, x, y + s);
+    ctx.quadraticCurveTo(x + d, cy, x, y);
+    ctx.closePath();
+    return;
+  }
+  if (type === 'star4') {
+    // 四角星：四边中点为尖角，对角线处内凹
+    const d = s * 0.16;
+    ctx.moveTo(cx, y);
+    ctx.quadraticCurveTo(cx + d, cy - d, x + s, cy);
+    ctx.quadraticCurveTo(cx + d, cy + d, cx, y + s);
+    ctx.quadraticCurveTo(cx - d, cy + d, x, cy);
+    ctx.quadraticCurveTo(cx - d, cy - d, cx, y);
+    ctx.closePath();
+    return;
+  }
+  if (type === 'zigzag') {
+    // 锯齿：每边 6 个向外三角齿
+    const t = s * 0.08;
+    const n = 6;
+    ctx.moveTo(x, y);
+    for (let i = 0; i < n; i++) {
+      ctx.lineTo(x + ((i + 0.5) * s) / n, y - t);
+      ctx.lineTo(x + ((i + 1) * s) / n, y);
+    }
+    for (let i = 0; i < n; i++) {
+      ctx.lineTo(x + s + t, y + ((i + 0.5) * s) / n);
+      ctx.lineTo(x + s, y + ((i + 1) * s) / n);
+    }
+    for (let i = 0; i < n; i++) {
+      ctx.lineTo(x + s - ((i + 0.5) * s) / n, y + s + t);
+      ctx.lineTo(x + s - ((i + 1) * s) / n, y + s);
+    }
+    for (let i = 0; i < n; i++) {
+      ctx.lineTo(x - t, y + s - ((i + 0.5) * s) / n);
+      ctx.lineTo(x, y + s - ((i + 1) * s) / n);
+    }
     ctx.closePath();
     return;
   }
@@ -781,14 +853,19 @@ const finderShapePath = (ctx, x, y, s, type) => {
 
 // 定位点外框（7x7），pal={pt,bg}
 const drawFinderRing = (ctx, x, y, c, type, pal) => {
-  if (type === 'dotted') {
+  if (type === 'dotted' || type === 'dottedSq') {
+    const square = type === 'dottedSq';
     ctx.fillStyle = pal.pt;
     for (let i = 0; i < 7; i++) {
       for (let j = 0; j < 7; j++) {
         if (i > 0 && i < 6 && j > 0 && j < 6) continue;
-        ctx.beginPath();
-        ctx.arc(x + (j + 0.5) * c, y + (i + 0.5) * c, c * 0.45, 0, Math.PI * 2);
-        ctx.fill();
+        if (square) {
+          ctx.fillRect(x + (j + 0.15) * c, y + (i + 0.15) * c, c * 0.7, c * 0.7);
+        } else {
+          ctx.beginPath();
+          ctx.arc(x + (j + 0.5) * c, y + (i + 0.5) * c, c * 0.45, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
     }
     return;
@@ -804,12 +881,17 @@ const drawFinderRing = (ctx, x, y, c, type, pal) => {
 // 定位点内点（3x3），pal={inpt}
 const drawFinderDot = (ctx, x, y, c, type, pal) => {
   ctx.fillStyle = pal.inpt;
-  if (type === 'dotted') {
+  if (type === 'dotted' || type === 'dottedSq') {
+    const square = type === 'dottedSq';
     for (let i = 0; i < 3; i++) {
       for (let j = 0; j < 3; j++) {
-        ctx.beginPath();
-        ctx.arc(x + (2 + j + 0.5) * c, y + (2 + i + 0.5) * c, c * 0.45, 0, Math.PI * 2);
-        ctx.fill();
+        if (square) {
+          ctx.fillRect(x + (2 + j + 0.15) * c, y + (2 + i + 0.15) * c, c * 0.7, c * 0.7);
+        } else {
+          ctx.beginPath();
+          ctx.arc(x + (2 + j + 0.5) * c, y + (2 + i + 0.5) * c, c * 0.45, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
     }
     return;
@@ -1407,7 +1489,7 @@ onMounted(() => {
 
 .pattern-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 6px;
 }
 
