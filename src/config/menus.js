@@ -17,7 +17,8 @@ import {
   SmileOutlined,
   TagsOutlined,
   FieldTimeOutlined,
-  NumberOutlined
+  NumberOutlined,
+  QrcodeOutlined
 } from '@ant-design/icons-vue';
 
 /**
@@ -43,7 +44,8 @@ export const MENU_GROUPS = [
       { path: '/daxiaoxie', name: '字母大小写转化', desc: '英文大小写与命名格式转换' },
       { path: '/chineseToPinyin', name: '汉字批量转拼音', desc: '汉字批量转换为拼音' },
       { path: '/symbols', name: '特殊符号大全', desc: '数学图形箭头等符号点击复制' },
-      { path: '/wordCount', name: '字数统计工具', desc: '统计汉字、字母、数字与符号数量' }
+      { path: '/wordCount', name: '字数统计工具', desc: '统计汉字、字母、数字与符号数量' },
+      { path: '/qrcode', name: '二维码生成器', desc: '在线生成各种格式的二维码图片' }
     ]
   },
   {
@@ -98,6 +100,7 @@ export const TOOL_ICONS = {
   '/chineseToPinyin': EditOutlined,
   '/symbols': TagsOutlined,
   '/wordCount': NumberOutlined,
+  '/qrcode': QrcodeOutlined,
   '/jsonFormat': CodeOutlined,
   '/cronGen': FieldTimeOutlined,
   '/gobang': BlockOutlined,

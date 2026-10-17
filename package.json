@@ -15,6 +15,7 @@
     "jspdf": "^2.5.2",
     "jszip": "^3.10.1",
     "pinyin": "^4.0.0",
+    "qrcode-generator": "^2.0.4",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"
   },

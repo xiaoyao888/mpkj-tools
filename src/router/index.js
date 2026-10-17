@@ -182,6 +182,16 @@ const routes = [
         meta:{title:'字数统计工具'},
         component: () => import('@/views/tools/wordCount.vue')
       }]
+    },
+    {
+      path: '/qrcode',
+      name: '二维码生成器',
+      component: PageLayout,
+      children:[{
+        path: '/qrcode',
+        meta:{title:'二维码生成器'},
+        component: () => import('@/views/tools/qrcode.vue')
+      }]
     }
 ]
 
