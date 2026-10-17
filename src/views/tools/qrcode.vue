@@ -1083,6 +1083,7 @@ onMounted(() => {
 .qrcode-forms {
   flex: 1;
   min-width: 0;
+  max-width: 460px;
 }
 
 .tabs {
@@ -1488,6 +1489,10 @@ onMounted(() => {
 
   .qrcode-left {
     flex-direction: column;
+  }
+
+  .qrcode-forms {
+    max-width: none;
   }
 
   .tabs {
