@@ -18,7 +18,9 @@ import {
   TagsOutlined,
   FieldTimeOutlined,
   NumberOutlined,
-  QrcodeOutlined
+  QrcodeOutlined,
+  AudioOutlined,
+  FormOutlined
 } from '@ant-design/icons-vue';
 
 /**
@@ -41,6 +43,7 @@ export const MENU_GROUPS = [
     title: '文本处理',
     icon: FontSizeOutlined,
     children: [
+      { path: '/wxEditor', name: '公众号文章编辑器', desc: '微信公众号图文排版与素材编辑' },
       { path: '/daxiaoxie', name: '字母大小写转化', desc: '英文大小写与命名格式转换' },
       { path: '/chineseToPinyin', name: '汉字批量转拼音', desc: '汉字批量转换为拼音' },
       { path: '/symbols', name: '特殊符号大全', desc: '数学图形箭头等符号点击复制' },
@@ -56,7 +59,8 @@ export const MENU_GROUPS = [
       { path: '/imageToPdf', name: '图片合并PDF', desc: '多张图片合并为 PDF' },
       { path: '/wordToPdf', name: 'Word导出PDF', desc: 'Word 文档导出为 PDF' },
       { path: '/watermark', name: '图片加水印', desc: '批量添加文字水印' },
-      { path: '/fileToBase64', name: '文件转Base64', desc: '文件转 Base64 编码' }
+      { path: '/fileToBase64', name: '文件转Base64', desc: '文件转 Base64 编码' },
+      { path: '/m4aToMp3', name: 'M4A批量转MP3', desc: '批量将 M4A 音频转换为 MP3' }
     ]
   },
   {
@@ -109,5 +113,7 @@ export const TOOL_ICONS = {
   '/chineseGen': BookOutlined,
   '/imageToPdf': FilePdfOutlined,
   '/wordToPdf': FileWordOutlined,
-  '/watermark': HighlightOutlined
+  '/watermark': HighlightOutlined,
+  '/m4aToMp3': AudioOutlined,
+  '/wxEditor': FormOutlined
 };

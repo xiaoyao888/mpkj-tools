@@ -192,6 +192,26 @@ const routes = [
         meta:{title:'二维码生成器'},
         component: () => import('@/views/tools/qrcode.vue')
       }]
+    },
+    {
+      path: '/m4aToMp3',
+      name: 'M4A批量转MP3',
+      component: PageLayout,
+      children:[{
+        path: '/m4aToMp3',
+        meta:{title:'M4A批量转MP3'},
+        component: () => import('@/views/tools/m4aToMp3.vue')
+      }]
+    },
+    {
+      path: '/wxEditor',
+      name: '公众号文章编辑器',
+      component: BlankLayout,
+      children:[{
+        path: '/wxEditor',
+        meta:{title:'公众号文章编辑器'},
+        component: () => import('@/views/tools/wxEditor.vue')
+      }]
     }
 ]
 

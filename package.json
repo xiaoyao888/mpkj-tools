@@ -6,21 +6,31 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "download:editor-images": "node scripts/download-editor-images.mjs",
+    "localize:editor-images": "node scripts/localize-editor-images.mjs"
   },
   "dependencies": {
+    "@ffmpeg/core": "^0.12.10",
+    "@ffmpeg/ffmpeg": "^0.12.15",
+    "@ffmpeg/util": "^0.12.2",
     "ant-design-vue": "^4.2.6",
+    "dexie": "^4.4.6",
     "docx-preview": "^0.4.1",
+    "dompurify": "^3.4.17",
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.2",
     "jszip": "^3.10.1",
     "pinyin": "^4.0.0",
     "qrcode-generator": "^2.0.4",
     "vue": "^3.5.13",
-    "vue-router": "^4.5.0"
+    "vue-router": "^4.5.0",
+    "vue-ueditor-wrap": "^3.0.8",
+    "vuex": "^4.1.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.1",
+    "sharp": "^0.35.5",
     "vite": "^6.2.1",
     "vite-plugin-vue-devtools": "^7.7.2"
   }
