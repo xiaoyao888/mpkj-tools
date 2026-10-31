@@ -204,16 +204,6 @@ const routes = [
       }]
     },
     {
-      path: '/qqCheck',
-      name: 'QQ号码估价',
-      component: PageLayout,
-      children:[{
-        path: '/qqCheck',
-        meta:{title:'QQ号码估价'},
-        component: () => import('@/views/tools/qqCheck.vue')
-      }]
-    },
-    {
       path: '/wxEditor',
       name: '公众号文章编辑器',
       component: BlankLayout,
