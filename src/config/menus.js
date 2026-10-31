@@ -91,7 +91,10 @@ export const MENU_GROUPS = [
     key: 'entertainment',
     title: '休闲娱乐',
     icon: SmileOutlined,
-    children: [{ path: '/gobang', name: '五子棋游戏', desc: '人机对战五子棋小游戏' }]
+    children: [
+      { path: '/gobang', name: '五子棋游戏', desc: '人机对战五子棋小游戏' },
+      { path: '/qqCheck', name: 'QQ号码估价', desc: '输入QQ号生成趣味估值报告' }
+    ]
   }
 ];
 
@@ -108,6 +111,7 @@ export const TOOL_ICONS = {
   '/jsonFormat': CodeOutlined,
   '/cronGen': FieldTimeOutlined,
   '/gobang': BlockOutlined,
+  '/qqCheck': SmileOutlined,
   '/fileToBase64': FileTextOutlined,
   '/mathGen': PlusCircleOutlined,
   '/chineseGen': BookOutlined,
