@@ -202,10 +202,10 @@ let resizeTimer = null;
 
 const displayScale = computed(() => (naturalW.value && displayW.value ? displayW.value / naturalW.value : 1));
 
-// 裁剪框以画布像素存储，缩放图片时保持不变；输出尺寸按画布坐标换算回原图像素
-const outW = computed(() => Math.max(1, Math.round(crop.value.w / displayScale.value)));
+// 输出像素直接等于裁剪框在画布上的宽高
+const outW = computed(() => Math.max(1, Math.round(crop.value.w)));
 
-const outH = computed(() => Math.max(1, Math.round(crop.value.h / displayScale.value)));
+const outH = computed(() => Math.max(1, Math.round(crop.value.h)));
 
 // 图片在固定画布中居中显示
 const imgLeft = computed(() => (stageW.value - displayW.value) / 2);
@@ -513,7 +513,8 @@ const updateResult = () => {
   if (iw > 0 && ih > 0) {
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(img, ix, iy, iw, ih, ix - srcX, iy - srcY, iw, ih);
+    // 输出像素与裁剪框等宽高：目标坐标按画布比例换算
+    ctx.drawImage(img, ix, iy, iw, ih, (ix - srcX) * s, (iy - srcY) * s, iw * s, ih * s);
   }
 
   const mime = `image/${format.value}`;
