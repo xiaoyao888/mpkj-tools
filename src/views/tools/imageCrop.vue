@@ -29,38 +29,37 @@
     <!-- 编辑区域 -->
     <div v-else class="editor-layout">
       <div ref="stagePanel" class="canvas-panel">
-        <div class="stage-scroll">
-          <div class="image-stage" :style="{ width: displayW + 'px', height: displayH + 'px' }">
-            <img
-              ref="previewImg"
-              class="stage-img"
-              :src="imageUrl"
-              alt="待裁剪图片"
-              draggable="false"
-              @load="onImageLoad"
-            >
-            <div class="crop-box" :style="cropStyle" @pointerdown="startDrag($event, 'move')">
-              <div class="grid-line gx1"></div>
-              <div class="grid-line gx2"></div>
-              <div class="grid-line gy1"></div>
-              <div class="grid-line gy2"></div>
-              <div class="handle nw" @pointerdown.stop="startDrag($event, 'nw')"></div>
-              <div class="handle ne" @pointerdown.stop="startDrag($event, 'ne')"></div>
-              <div class="handle sw" @pointerdown.stop="startDrag($event, 'sw')"></div>
-              <div class="handle se" @pointerdown.stop="startDrag($event, 'se')"></div>
-            </div>
+        <div class="stage-viewport" :style="{ width: stageW + 'px', height: stageH + 'px' }">
+          <img
+            ref="previewImg"
+            class="stage-img"
+            :style="imgStyle"
+            :src="imageUrl"
+            alt="待裁剪图片"
+            draggable="false"
+            @load="onImageLoad"
+          >
+          <div class="crop-box" :style="cropStyle" @pointerdown="startDrag($event, 'move')">
+            <div class="grid-line gx1"></div>
+            <div class="grid-line gx2"></div>
+            <div class="grid-line gy1"></div>
+            <div class="grid-line gy2"></div>
+            <div class="handle nw" @pointerdown.stop="startDrag($event, 'nw')"></div>
+            <div class="handle ne" @pointerdown.stop="startDrag($event, 'ne')"></div>
+            <div class="handle sw" @pointerdown.stop="startDrag($event, 'sw')"></div>
+            <div class="handle se" @pointerdown.stop="startDrag($event, 'se')"></div>
           </div>
         </div>
         <div class="stage-meta">
           原图 {{ naturalW }} × {{ naturalH }} px
           <span v-if="displayScale < 0.999">· 预览缩放 {{ Math.round(displayScale * 100) }}%</span>
-          <span class="tip-text">拖动裁剪框移动，拖动四角调整大小，可用缩放条放大查看细节</span>
+          <span class="tip-text">画布固定，拖动缩放条调整图片大小；拖动裁剪框移动，拖动四角调整大小</span>
         </div>
       </div>
 
       <div class="settings-panel">
         <div class="field">
-          <label>画布缩放：{{ zoom }}%（仅放大预览，不改变输出尺寸）</label>
+          <label>图片缩放：{{ zoom }}%（画布固定，仅改变图片显示大小）</label>
           <a-slider v-model:value="zoom" :min="25" :max="400" :step="5" @change="applyZoom" />
           <div class="scale-quick">
             <button
@@ -170,6 +169,8 @@ const naturalH = ref(0);
 const originalSize = ref(0);
 const displayW = ref(0);
 const displayH = ref(0);
+const stageW = ref(0);
+const stageH = ref(440);
 
 const crop = ref({ x: 0, y: 0, w: 0, h: 0 });
 const ratio = ref(0);
@@ -205,9 +206,20 @@ const outW = computed(() => Math.max(1, Math.round(crop.value.w)));
 
 const outH = computed(() => Math.max(1, Math.round(crop.value.h)));
 
+// 图片在固定画布中居中显示
+const imgLeft = computed(() => (stageW.value - displayW.value) / 2);
+const imgTop = computed(() => (stageH.value - displayH.value) / 2);
+
+const imgStyle = computed(() => ({
+  left: `${imgLeft.value}px`,
+  top: `${imgTop.value}px`,
+  width: `${displayW.value}px`,
+  height: `${displayH.value}px`
+}));
+
 const cropStyle = computed(() => ({
-  left: `${crop.value.x * displayScale.value}px`,
-  top: `${crop.value.y * displayScale.value}px`,
+  left: `${imgLeft.value + crop.value.x * displayScale.value}px`,
+  top: `${imgTop.value + crop.value.y * displayScale.value}px`,
   width: `${crop.value.w * displayScale.value}px`,
   height: `${crop.value.h * displayScale.value}px`
 }));
@@ -272,12 +284,13 @@ const onImageLoad = () => {
   scheduleResult(0);
 };
 
-// 计算“适应画布”的基准缩放，再叠加用户缩放比例
+// 画布尺寸固定，图片按比例在其内部缩放
 const measureDisplay = () => {
   if (!naturalW.value) return;
   const panel = stagePanel.value;
-  const availW = Math.max(120, (panel ? panel.clientWidth : 600) - 28);
-  fitScale.value = Math.min(1, availW / naturalW.value, 440 / naturalH.value);
+  stageW.value = Math.max(120, (panel ? panel.clientWidth : 600) - 28);
+  stageH.value = window.innerWidth <= 768 ? 320 : 440;
+  fitScale.value = Math.min(1, stageW.value / naturalW.value, stageH.value / naturalH.value);
   applyZoom();
 };
 
@@ -606,24 +619,18 @@ onUnmounted(() => {
   border-radius: 8px;
 }
 
-.stage-scroll {
-  max-height: 470px;
-  overflow: auto;
-  background: #f0f0f0;
-  border-radius: 4px;
-}
-
-.image-stage {
+.stage-viewport {
   position: relative;
+  margin: 0 auto;
   overflow: hidden;
   background: #f0f0f0;
+  border-radius: 4px;
   user-select: none;
 }
 
 .stage-img {
+  position: absolute;
   display: block;
-  width: 100%;
-  height: 100%;
   -webkit-user-drag: none;
 }
 
