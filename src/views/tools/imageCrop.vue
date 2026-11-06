@@ -60,7 +60,7 @@
       <div class="settings-panel">
         <div class="field">
           <label>图片缩放：{{ zoom }}%（画布固定，仅改变图片显示大小）</label>
-          <a-slider v-model:value="zoom" :min="25" :max="400" :step="5" @change="applyZoom" />
+          <a-slider v-model:value="zoom" :min="25" :max="400" :step="5" @change="onZoomChange" />
           <div class="scale-quick">
             <button
               v-for="p in [50, 100, 200, 400]"
@@ -86,12 +86,12 @@
         </div>
 
         <div class="field">
-          <label>裁剪区域（像素）</label>
+          <label>裁剪框位置（画布像素）</label>
           <div class="size-grid">
-            <a-input-number v-model:value="editX" :min="0" :max="naturalW" size="small" addon-before="X" @change="applyCropInput('x')" />
-            <a-input-number v-model:value="editY" :min="0" :max="naturalH" size="small" addon-before="Y" @change="applyCropInput('y')" />
-            <a-input-number v-model:value="editW" :min="1" :max="naturalW" size="small" addon-before="宽" @change="applyCropInput('w')" />
-            <a-input-number v-model:value="editH" :min="1" :max="naturalH" size="small" addon-before="高" @change="applyCropInput('h')" />
+            <a-input-number v-model:value="editX" :min="0" :max="stageW" size="small" addon-before="X" @change="applyCropInput('x')" />
+            <a-input-number v-model:value="editY" :min="0" :max="stageH" size="small" addon-before="Y" @change="applyCropInput('y')" />
+            <a-input-number v-model:value="editW" :min="1" :max="stageW" size="small" addon-before="宽" @change="applyCropInput('w')" />
+            <a-input-number v-model:value="editH" :min="1" :max="stageH" size="small" addon-before="高" @change="applyCropInput('h')" />
           </div>
         </div>
 
@@ -143,7 +143,7 @@
       <h3>功能特点</h3>
       <ul>
         <li>支持自由裁剪，也可锁定 1:1、4:3、16:9 等常用比例</li>
-        <li>支持画布缩放（25%~400%），放大后可精确查看和调整裁剪区域</li>
+        <li>支持图片缩放（25%~400%），裁剪框位置与大小保持不变，仅图片在画布内放大缩小</li>
         <li>可设置压缩质量，实时显示输出体积和压缩率</li>
         <li>支持导出 JPEG / PNG / WebP 格式，PNG/WebP 可保留透明背景</li>
         <li>裁剪框可直接拖动和拉伸，也可手动输入精确像素值</li>
@@ -200,11 +200,12 @@ const processing = ref(false);
 let resultTimer = null;
 let resizeTimer = null;
 
-const displayScale = computed(() => (naturalW.value ? displayW.value / naturalW.value : 1));
+const displayScale = computed(() => (naturalW.value && displayW.value ? displayW.value / naturalW.value : 1));
 
-const outW = computed(() => Math.max(1, Math.round(crop.value.w)));
+// 裁剪框以画布像素存储，缩放图片时保持不变；输出尺寸按画布坐标换算回原图像素
+const outW = computed(() => Math.max(1, Math.round(crop.value.w / displayScale.value)));
 
-const outH = computed(() => Math.max(1, Math.round(crop.value.h)));
+const outH = computed(() => Math.max(1, Math.round(crop.value.h / displayScale.value)));
 
 // 图片在固定画布中居中显示
 const imgLeft = computed(() => (stageW.value - displayW.value) / 2);
@@ -217,11 +218,12 @@ const imgStyle = computed(() => ({
   height: `${displayH.value}px`
 }));
 
+// 裁剪框直接使用画布坐标，缩放图片时位置与大小始终不变
 const cropStyle = computed(() => ({
-  left: `${imgLeft.value + crop.value.x * displayScale.value}px`,
-  top: `${imgTop.value + crop.value.y * displayScale.value}px`,
-  width: `${crop.value.w * displayScale.value}px`,
-  height: `${crop.value.h * displayScale.value}px`
+  left: `${crop.value.x}px`,
+  top: `${crop.value.y}px`,
+  width: `${crop.value.w}px`,
+  height: `${crop.value.h}px`
 }));
 
 const savedText = computed(() => {
@@ -292,6 +294,7 @@ const measureDisplay = () => {
   stageH.value = window.innerWidth <= 768 ? 320 : 440;
   fitScale.value = Math.min(1, stageW.value / naturalW.value, stageH.value / naturalH.value);
   applyZoom();
+  clampCropToStage();
 };
 
 const applyZoom = () => {
@@ -301,9 +304,38 @@ const applyZoom = () => {
   displayH.value = naturalH.value * s;
 };
 
+// 画布尺寸变化时保证裁剪框仍在画布内
+const clampCropToStage = () => {
+  const c = crop.value;
+  if (!c.w || !c.h) return;
+  const w = Math.min(c.w, stageW.value);
+  const h = Math.min(c.h, stageH.value);
+  crop.value = {
+    x: clamp(c.x, 0, stageW.value - w),
+    y: clamp(c.y, 0, stageH.value - h),
+    w,
+    h
+  };
+};
+
+// 缩放只改变图片显示大小，裁剪框保持不动
+const onZoomChange = () => {
+  applyZoom();
+  scheduleResult(0);
+};
+
 const setZoom = (p) => {
   zoom.value = p;
-  applyZoom();
+  onZoomChange();
+};
+
+// 图片可见区域（图片显示矩形与画布的交集）
+const visibleRect = () => {
+  const x = Math.max(0, imgLeft.value);
+  const y = Math.max(0, imgTop.value);
+  const w = Math.min(stageW.value, imgLeft.value + displayW.value) - x;
+  const h = Math.min(stageH.value, imgTop.value + displayH.value) - y;
+  return { x, y, w, h };
 };
 
 const initCrop = () => {
@@ -312,23 +344,28 @@ const initCrop = () => {
     applyRatioCrop();
     return;
   }
-  crop.value = { x: 0, y: 0, w: naturalW.value, h: naturalH.value };
+  const v = visibleRect();
+  crop.value = {
+    x: Math.round(v.x),
+    y: Math.round(v.y),
+    w: Math.max(1, Math.round(v.w)),
+    h: Math.max(1, Math.round(v.h))
+  };
 };
 
 const applyRatioCrop = () => {
-  const nw = naturalW.value;
-  const nh = naturalH.value;
   const r = ratio.value;
-  if (!nw || !nh || !r) return;
-  let w = nw;
+  const v = visibleRect();
+  if (!v.w || !v.h || !r) return;
+  let w = v.w;
   let h = w / r;
-  if (h > nh) {
-    h = nh;
+  if (h > v.h) {
+    h = v.h;
     w = h * r;
   }
   crop.value = {
-    x: Math.round((nw - w) / 2),
-    y: Math.round((nh - h) / 2),
+    x: Math.round(v.x + (v.w - w) / 2),
+    y: Math.round(v.y + (v.h - h) / 2),
     w: Math.round(w),
     h: Math.round(h)
   };
@@ -345,8 +382,8 @@ const setRatio = (value) => {
 
 const applyCropInput = (key) => {
   if (!naturalW.value) return;
-  const nw = naturalW.value;
-  const nh = naturalH.value;
+  const sw = stageW.value;
+  const sh = stageH.value;
   let x = Number(editX.value) || 0;
   let y = Number(editY.value) || 0;
   let w = Number(editW.value) || 1;
@@ -357,14 +394,16 @@ const applyCropInput = (key) => {
     else if (key === 'h') w = Math.round(h * ratio.value);
   }
 
-  w = clamp(w, 1, nw);
-  h = clamp(h, 1, nh);
+  w = clamp(w, 1, sw);
+  h = clamp(h, 1, sh);
   if (ratio.value) {
     if (w > h * ratio.value) w = Math.round(h * ratio.value);
     else h = Math.round(w / ratio.value);
+    w = clamp(w, 1, sw);
+    h = clamp(h, 1, sh);
   }
-  x = clamp(x, 0, nw - w);
-  y = clamp(y, 0, nh - h);
+  x = clamp(x, 0, sw - w);
+  y = clamp(y, 0, sh - h);
 
   crop.value = { x, y, w, h };
   scheduleResult(0);
@@ -388,39 +427,38 @@ const startDrag = (e, mode) => {
 
 const onDrag = (e) => {
   if (!dragState) return;
-  const scale = displayScale.value || 1;
-  const dx = (e.clientX - dragState.startX) / scale;
-  const dy = (e.clientY - dragState.startY) / scale;
+  const dx = e.clientX - dragState.startX;
+  const dy = e.clientY - dragState.startY;
   const c = dragState.crop;
-  const nw = naturalW.value;
-  const nh = naturalH.value;
-  const minSize = Math.max(8, Math.round(Math.min(nw, nh) * 0.05));
+  const sw = stageW.value;
+  const sh = stageH.value;
+  const minSize = 20;
 
   if (dragState.mode === 'move') {
-    const x = clamp(c.x + dx, 0, nw - c.w);
-    const y = clamp(c.y + dy, 0, nh - c.h);
+    const x = clamp(c.x + dx, 0, sw - c.w);
+    const y = clamp(c.y + dy, 0, sh - c.h);
     crop.value = { x, y, w: c.w, h: c.h };
     return;
   }
 
   const anchorX = dragState.mode.includes('w') ? c.x + c.w : c.x;
   const anchorY = dragState.mode.includes('n') ? c.y + c.h : c.y;
-  const maxW = dragState.mode.includes('w') ? anchorX : nw - anchorX;
-  const maxH = dragState.mode.includes('n') ? anchorY : nh - anchorY;
+  const maxW = dragState.mode.includes('w') ? anchorX : sw - anchorX;
+  const maxH = dragState.mode.includes('n') ? anchorY : sh - anchorY;
 
   let w = dragState.mode.includes('w') ? c.w - dx : c.w + dx;
   let h = dragState.mode.includes('n') ? c.h - dy : c.h + dy;
 
   if (ratio.value) {
-    w = clamp(w, minSize, Math.min(maxW, maxH * ratio.value));
+    w = clamp(w, Math.min(minSize, maxW), Math.min(maxW, maxH * ratio.value));
     h = Math.round(w / ratio.value);
     if (h > maxH) {
       h = maxH;
       w = Math.round(h * ratio.value);
     }
   } else {
-    w = clamp(w, minSize, maxW);
-    h = clamp(h, minSize, maxH);
+    w = clamp(w, Math.min(minSize, maxW), maxW);
+    h = clamp(h, Math.min(minSize, maxH), maxH);
   }
 
   const x = dragState.mode.includes('w') ? anchorX - w : anchorX;
@@ -448,6 +486,13 @@ const updateResult = () => {
   processing.value = true;
   const w = outW.value;
   const h = outH.value;
+  const s = displayScale.value;
+  // 画布坐标 -> 原图源坐标
+  const srcX = (c.x - imgLeft.value) / s;
+  const srcY = (c.y - imgTop.value) / s;
+  const srcW = c.w / s;
+  const srcH = c.h / s;
+
   const canvas = document.createElement('canvas');
   canvas.width = w;
   canvas.height = h;
@@ -457,9 +502,19 @@ const updateResult = () => {
     ctx.fillStyle = '#fff';
     ctx.fillRect(0, 0, w, h);
   }
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(img, c.x, c.y, c.w, c.h, 0, 0, w, h);
+
+  // 裁剪框超出图片的部分保持空白/透明
+  const ix = Math.max(0, srcX);
+  const iy = Math.max(0, srcY);
+  const ix2 = Math.min(naturalW.value, srcX + srcW);
+  const iy2 = Math.min(naturalH.value, srcY + srcH);
+  const iw = ix2 - ix;
+  const ih = iy2 - iy;
+  if (iw > 0 && ih > 0) {
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(img, ix, iy, iw, ih, ix - srcX, iy - srcY, iw, ih);
+  }
 
   const mime = `image/${format.value}`;
   const q = format.value === 'png' ? undefined : quality.value / 100;
