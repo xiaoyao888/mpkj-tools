@@ -29,34 +29,50 @@
     <!-- 编辑区域 -->
     <div v-else class="editor-layout">
       <div ref="stagePanel" class="canvas-panel">
-        <div ref="stage" class="image-stage">
-          <img
-            ref="previewImg"
-            class="stage-img"
-            :src="imageUrl"
-            alt="待裁剪图片"
-            draggable="false"
-            @load="onImageLoad"
-          >
-          <div class="crop-box" :style="cropStyle" @pointerdown="startDrag($event, 'move')">
-            <div class="grid-line gx1"></div>
-            <div class="grid-line gx2"></div>
-            <div class="grid-line gy1"></div>
-            <div class="grid-line gy2"></div>
-            <div class="handle nw" @pointerdown.stop="startDrag($event, 'nw')"></div>
-            <div class="handle ne" @pointerdown.stop="startDrag($event, 'ne')"></div>
-            <div class="handle sw" @pointerdown.stop="startDrag($event, 'sw')"></div>
-            <div class="handle se" @pointerdown.stop="startDrag($event, 'se')"></div>
+        <div class="stage-scroll">
+          <div class="image-stage" :style="{ width: displayW + 'px', height: displayH + 'px' }">
+            <img
+              ref="previewImg"
+              class="stage-img"
+              :src="imageUrl"
+              alt="待裁剪图片"
+              draggable="false"
+              @load="onImageLoad"
+            >
+            <div class="crop-box" :style="cropStyle" @pointerdown="startDrag($event, 'move')">
+              <div class="grid-line gx1"></div>
+              <div class="grid-line gx2"></div>
+              <div class="grid-line gy1"></div>
+              <div class="grid-line gy2"></div>
+              <div class="handle nw" @pointerdown.stop="startDrag($event, 'nw')"></div>
+              <div class="handle ne" @pointerdown.stop="startDrag($event, 'ne')"></div>
+              <div class="handle sw" @pointerdown.stop="startDrag($event, 'sw')"></div>
+              <div class="handle se" @pointerdown.stop="startDrag($event, 'se')"></div>
+            </div>
           </div>
         </div>
         <div class="stage-meta">
           原图 {{ naturalW }} × {{ naturalH }} px
           <span v-if="displayScale < 0.999">· 预览缩放 {{ Math.round(displayScale * 100) }}%</span>
-          <span class="tip-text">拖动裁剪框移动，拖动四角调整大小</span>
+          <span class="tip-text">拖动裁剪框移动，拖动四角调整大小，可用缩放条放大查看细节</span>
         </div>
       </div>
 
       <div class="settings-panel">
+        <div class="field">
+          <label>画布缩放：{{ zoom }}%（仅放大预览，不改变输出尺寸）</label>
+          <a-slider v-model:value="zoom" :min="25" :max="400" :step="5" @change="applyZoom" />
+          <div class="scale-quick">
+            <button
+              v-for="p in [50, 100, 200, 400]"
+              :key="p"
+              class="ratio-btn"
+              :class="{ active: zoom === p }"
+              @click="setZoom(p)"
+            >{{ p }}%</button>
+          </div>
+        </div>
+
         <div class="field">
           <label>裁剪比例</label>
           <div class="ratio-btns">
@@ -101,11 +117,6 @@
           />
         </div>
 
-        <div class="field">
-          <label>最大输出宽度（0 = 保持裁剪尺寸，不放大）</label>
-          <a-input-number v-model:value="maxWidth" :min="0" :max="8000" size="small" style="width: 100%" @change="scheduleResult" />
-        </div>
-
         <div class="result-card">
           <div class="result-head">
             <span>输出预览</span>
@@ -133,7 +144,8 @@
       <h3>功能特点</h3>
       <ul>
         <li>支持自由裁剪，也可锁定 1:1、4:3、16:9 等常用比例</li>
-        <li>可设置输出宽度与压缩质量，实时显示输出体积和压缩率</li>
+        <li>支持画布缩放（25%~400%），放大后可精确查看和调整裁剪区域</li>
+        <li>可设置压缩质量，实时显示输出体积和压缩率</li>
         <li>支持导出 JPEG / PNG / WebP 格式，PNG/WebP 可保留透明背景</li>
         <li>裁剪框可直接拖动和拉伸，也可手动输入精确像素值</li>
         <li>所有处理均在本地浏览器完成，图片不会上传，保证数据安全</li>
@@ -148,7 +160,6 @@ import { message } from 'ant-design-vue';
 
 const fileInput = ref(null);
 const stagePanel = ref(null);
-const stage = ref(null);
 const previewImg = ref(null);
 
 const isDragging = ref(false);
@@ -178,7 +189,8 @@ const editH = ref(0);
 
 const format = ref('jpeg');
 const quality = ref(85);
-const maxWidth = ref(0);
+const zoom = ref(100);
+const fitScale = ref(1);
 
 const resultBlob = ref(null);
 const resultUrl = ref('');
@@ -189,17 +201,9 @@ let resizeTimer = null;
 
 const displayScale = computed(() => (naturalW.value ? displayW.value / naturalW.value : 1));
 
-const outW = computed(() => {
-  const cw = crop.value.w;
-  if (!cw) return 0;
-  return Math.round(maxWidth.value > 0 ? Math.min(cw, maxWidth.value) : cw);
-});
+const outW = computed(() => Math.max(1, Math.round(crop.value.w)));
 
-const outH = computed(() => {
-  const cw = crop.value.w;
-  if (!cw) return 0;
-  return Math.round((crop.value.h * outW.value) / cw);
-});
+const outH = computed(() => Math.max(1, Math.round(crop.value.h)));
 
 const cropStyle = computed(() => ({
   left: `${crop.value.x * displayScale.value}px`,
@@ -255,6 +259,7 @@ const loadFile = (file) => {
   fileName.value = file.name;
   originalSize.value = file.size;
   imageUrl.value = URL.createObjectURL(file);
+  zoom.value = 100;
 };
 
 const onImageLoad = () => {
@@ -267,11 +272,25 @@ const onImageLoad = () => {
   scheduleResult(0);
 };
 
+// 计算“适应画布”的基准缩放，再叠加用户缩放比例
 const measureDisplay = () => {
-  if (!previewImg.value) return;
-  const rect = previewImg.value.getBoundingClientRect();
-  displayW.value = rect.width || naturalW.value;
-  displayH.value = rect.height || naturalH.value;
+  if (!naturalW.value) return;
+  const panel = stagePanel.value;
+  const availW = Math.max(120, (panel ? panel.clientWidth : 600) - 28);
+  fitScale.value = Math.min(1, availW / naturalW.value, 440 / naturalH.value);
+  applyZoom();
+};
+
+const applyZoom = () => {
+  if (!naturalW.value) return;
+  const s = fitScale.value * (zoom.value / 100);
+  displayW.value = naturalW.value * s;
+  displayH.value = naturalH.value * s;
+};
+
+const setZoom = (p) => {
+  zoom.value = p;
+  applyZoom();
 };
 
 const initCrop = () => {
@@ -496,6 +515,8 @@ const clearAll = (keepData = false) => {
     originalSize.value = 0;
     crop.value = { x: 0, y: 0, w: 0, h: 0 };
     ratio.value = 0;
+    zoom.value = 100;
+    fitScale.value = 1;
   }
 };
 
@@ -585,20 +606,24 @@ onUnmounted(() => {
   border-radius: 8px;
 }
 
+.stage-scroll {
+  max-height: 470px;
+  overflow: auto;
+  background: #f0f0f0;
+  border-radius: 4px;
+}
+
 .image-stage {
   position: relative;
-  display: inline-block;
-  max-width: 100%;
   overflow: hidden;
   background: #f0f0f0;
   user-select: none;
-  touch-action: none;
 }
 
 .stage-img {
   display: block;
-  max-width: 100%;
-  max-height: 440px;
+  width: 100%;
+  height: 100%;
   -webkit-user-drag: none;
 }
 
@@ -745,6 +770,12 @@ onUnmounted(() => {
   gap: 8px;
 }
 
+.scale-quick {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
 .result-card {
   margin-bottom: 16px;
   padding: 12px;
@@ -848,10 +879,6 @@ onUnmounted(() => {
 
   .settings-panel {
     width: 100%;
-  }
-
-  .stage-img {
-    max-height: 320px;
   }
 }
 </style>
