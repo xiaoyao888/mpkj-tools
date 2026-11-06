@@ -20,7 +20,9 @@ import {
   NumberOutlined,
   QrcodeOutlined,
   AudioOutlined,
-  FormOutlined
+  FormOutlined,
+  ScissorOutlined,
+  PictureOutlined
 } from '@ant-design/icons-vue';
 
 /**
@@ -59,6 +61,8 @@ export const MENU_GROUPS = [
       { path: '/imageToPdf', name: '图片合并PDF', desc: '多张图片合并为 PDF' },
       { path: '/wordToPdf', name: 'Word导出PDF', desc: 'Word 文档导出为 PDF' },
       { path: '/watermark', name: '图片加水印', desc: '批量添加文字水印' },
+      { path: '/imageCrop', name: '图片裁剪压缩', desc: '在线裁剪图片并压缩体积' },
+      { path: '/imageToIco', name: '图片转ICO', desc: 'PNG/JPG 转多尺寸 ICO 图标' },
       { path: '/fileToBase64', name: '文件转Base64', desc: '文件转 Base64 编码' },
       { path: '/m4aToMp3', name: 'M4A批量转MP3', desc: '批量将 M4A 音频转换为 MP3' }
     ]
@@ -116,6 +120,8 @@ export const TOOL_ICONS = {
   '/imageToPdf': FilePdfOutlined,
   '/wordToPdf': FileWordOutlined,
   '/watermark': HighlightOutlined,
+  '/imageCrop': ScissorOutlined,
+  '/imageToIco': PictureOutlined,
   '/m4aToMp3': AudioOutlined,
   '/wxEditor': FormOutlined
 };

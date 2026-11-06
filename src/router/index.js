@@ -144,6 +144,26 @@ const routes = [
       }]
     },
     {
+      path: '/imageCrop',
+      name: '图片裁剪压缩',
+      component: PageLayout,
+      children:[{
+        path: '/imageCrop',
+        meta:{title:'图片裁剪压缩'},
+        component: () => import('@/views/tools/imageCrop.vue')
+      }]
+    },
+    {
+      path: '/imageToIco',
+      name: '图片转ICO',
+      component: PageLayout,
+      children:[{
+        path: '/imageToIco',
+        meta:{title:'图片转ICO'},
+        component: () => import('@/views/tools/imageToIco.vue')
+      }]
+    },
+    {
       path: '/symbols',
       name: '特殊符号大全',
       component: PageLayout,
